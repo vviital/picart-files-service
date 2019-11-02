@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "koa": "^2.11.0"
+  },
+  "scripts": {
+    "build": "rm -rf dest && tsc --build",
+    "start": "node dest/index.js",
+    "start:dev": "node --inspect=5858 -r ts-node/register ./src/index.ts",
+    "start:watch": "nodemon"
+  },
+  "name": "picart-files-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/vviital/picart-files-service.git",
+  "author": "Vitali Zaneuski <vviital@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "nodemon": "^1.19.4",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.4"
+  }
+}
