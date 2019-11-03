@@ -16,3 +16,8 @@ export type UserClaims = {
   login: string,
   roles: string[],
 }
+
+export type Pagination = {
+  limit: number,
+  offset: number,
+}

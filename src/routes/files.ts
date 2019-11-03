@@ -9,28 +9,17 @@ import { ISpectrumPoint } from '../datasources/spectrumLine'
 import { contentTypes } from '../constants';
 import { auth } from '../middlewares';
 import { sendResponse, sendError } from '../senders';
+import { Pagination } from '../models';
 
 const router = new Router({
   prefix: '/files',
 });
-
-type Pagination = {
-  limit: number,
-  offset: number,
-}
 
 const typeToCollection: {
   [type: string]: mongoose.Model<mongoose.Document, {}>
 } = {
   [contentTypes.spectrum]: SpectrumPoint,
 }
-
-const getPaginationParams = (ctx: Koa.Context): Pagination => {
-  return {
-    limit: +ctx.request.query.limit || 25,
-    offset: +ctx.request.query.offset || 0,
-  };
-};
 
 router.get('/', auth, async (ctx: Koa.Context) => {
   const params = getPaginationParams(ctx);
@@ -103,5 +92,12 @@ router.delete('/:id', auth, async (ctx: Koa.Context) => {
 
   sendResponse(ctx, 204);
 });
+
+const getPaginationParams = (ctx: Koa.Context): Pagination => {
+  return {
+    limit: +ctx.request.query.limit || 25,
+    offset: +ctx.request.query.offset || 0,
+  };
+};
 
 export default router;

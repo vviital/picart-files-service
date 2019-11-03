@@ -2,16 +2,14 @@ import { Context } from 'koa'
 import * as Router from 'koa-router';
 import * as koaBody from 'koa-body';
 import { get }  from 'lodash';
-import * as split from 'split2';
-import * as through2 from 'through2';
 import * as shortID from 'shortid';
 
 import { ChunkUploadBody } from '../models';
-import { Chunk, File, SpectrumPoint, fsStorage } from '../datasources';
+import { Chunk, File, fsStorage } from '../datasources';
 import { contentTypes } from '../constants';
 import { auth } from '../middlewares';
 import { sendResponse, sendError } from '../senders';
-import { createFileStream, batcher, uploader } from '../streams';
+import chunksToPoints from '../parser';
 
 const router = new Router({
   prefix: '/chunks',
@@ -31,36 +29,6 @@ router.post('/', auth, koaBody({
 
   sendResponse(ctx, 200, { id: chunk.id });
 });
-
-const uploadPoints = async (fileID: string, hash: string): Promise<{ totalCount: number }> => { 
-  const readable = createFileStream(hash);
-  let totalCount = 0;
-
-  const result = await new Promise((resolve, reject) => {
-    readable
-    .on('error', reject)
-    .pipe(split('\n'))
-    .on('error', reject)
-    .pipe(through2.obj(function (chunk, _, callback) {
-      const [waveLength, intensity] =  chunk.toString().split(' ');
-      totalCount++;
-      this.push({
-        fileID,
-        intensity: parseFloat(intensity.replace(',', '.')),
-        waveLength: parseFloat(waveLength.replace(',', '.')),
-      });
-      callback();
-    }))
-    .on('error', reject)
-    .pipe(batcher())
-    .on('error', reject)
-    .pipe(uploader(SpectrumPoint))
-    .on('error', reject)
-    .on('finish', () => resolve({ totalCount }));
-  });
-
-  return result as Promise<{ totalCount: number }>;
-}
 
 router.delete('/:hash', auth, async (ctx: Context) => {
   const hash: string = get(ctx, 'params.hash', '');
@@ -89,7 +57,7 @@ router.post('/spectrum/:hash', auth, koaBody(), async (ctx: Context) => {
     return sendError(ctx, 404, { message: 'Chunks not found' });
   }
 
-  const result = await uploadPoints(fileID, hash);
+  const result = await chunksToPoints(fileID, hash);
 
   const file = new File({
     ...extractFileMeta(body),
