@@ -8,6 +8,7 @@ import { IFile } from '../datasources/file'
 import { ISpectrumPoint } from '../datasources/spectrumLine'
 import { contentTypes } from '../constants';
 import { auth } from '../middlewares';
+import { sendResponse, sendError } from '../senders';
 
 const router = new Router({
   prefix: '/files',
@@ -43,12 +44,12 @@ router.get('/', auth, async (ctx: Koa.Context) => {
       .sort({ createdAt: -1 })
   ]);
 
-  ctx.body = {
+  sendResponse(ctx, 200, {
     ...params,
     items: files.map(x => x.toJSON({ virtuals: true })),
     totalCount: count,
     type: 'collection',
-  };
+  });
 });
 
 router.get('/:id', auth, async (ctx: Koa.Context) => {
@@ -68,15 +69,13 @@ router.get('/:id', auth, async (ctx: Koa.Context) => {
   const content: ISpectrumPoint[] = results[1];
 
   if (!file) {
-    ctx.status = 404;
-    ctx.body = { message: 'File not found' };
-    return;
+    return sendError(ctx, 404, { message: 'File not found' });
   }
 
-  ctx.body = {
+  sendResponse(ctx, 200, {
     ...file.toJSON({ virtuals: true }),
     content: content.map(x => omit(x.toJSON(), '_id')),
-  };
+  });
 });
 
 router.delete('/:id', auth, async (ctx: Koa.Context) => {
@@ -87,9 +86,7 @@ router.delete('/:id', auth, async (ctx: Koa.Context) => {
   const file = await File.findOne(query);
 
   if (!file) {
-    ctx.status = 404;
-    ctx.body = { message: 'File not found' };
-    return
+    return sendError(ctx, 404, { message: 'File not found' });
   }
 
   await File.deleteOne(query);
@@ -104,7 +101,7 @@ router.delete('/:id', auth, async (ctx: Koa.Context) => {
     console.error('Unknown content type', contentType);
   }
 
-  ctx.status = 204;
+  sendResponse(ctx, 204);
 });
 
 export default router;

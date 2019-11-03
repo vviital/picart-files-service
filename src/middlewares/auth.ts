@@ -4,6 +4,7 @@ import { get } from 'lodash';
 
 import config from '../config';
 import { UserClaims } from '../models';
+import { sendError } from '../senders';
 
 const getUserClaims = (claims: any): UserClaims => ({
   id: get(claims, 'id', ''),
@@ -24,8 +25,7 @@ const auth = (ctx: Context, next: Function) => {
     return next();
   } catch (err) {
     console.error(err);
-    ctx.status = 401;
-    ctx.body = { message: 'Unauthorized' };
+    return sendError(ctx, 401, { message: 'Unauthorized' });
   }
 };
 

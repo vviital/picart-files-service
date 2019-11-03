@@ -14,6 +14,7 @@ import { ChunkUploadBody } from '../models';
 import { Chunk, File, SpectrumPoint } from '../datasources';
 import { contentTypes } from '../constants';
 import { auth } from '../middlewares';
+import { sendResponse, sendError } from '../senders';
 
 const readFile = util.promisify(fs.readFile);
 const deleteFile = util.promisify(fs.unlink);
@@ -53,8 +54,7 @@ router.post('/', auth, koaBody({
   const chunk = new Chunk({ ...body, content, ownerID });
   await chunk.save();
 
-  ctx.status = 200;
-  ctx.body = { id: chunk.id };
+  sendResponse(ctx, 200, { id: chunk.id });
 });
 
 async function *streamChunks(hash: string) {
@@ -159,12 +159,10 @@ router.delete('/:hash', auth, async (ctx: Context) => {
   const result = await Chunk.deleteMany(query);
 
   if (!result.deletedCount) {
-    ctx.body = { message: 'Chunks not found' };
-    ctx.status = 404;
-    return
+    return sendError(ctx, 404, { message: 'Chunks not found' });
   }
 
-  ctx.status = 204;
+  sendResponse(ctx, 204);
 });
 
 const extractFileMeta = (body: any) => ({
@@ -183,9 +181,7 @@ router.post('/spectrum/:hash', auth, koaBody(), async (ctx: Context) => {
   const count = await Chunk.count({ hash, ownerID })
 
   if (!count) {
-    ctx.body = { message: 'Chunks not found' };
-    ctx.status = 404;
-    return;
+    return sendError(ctx, 404, { message: 'Chunks not found' });
   }
 
   const result = await uploadPoints(fileID, hash);
@@ -199,8 +195,7 @@ router.post('/spectrum/:hash', auth, koaBody(), async (ctx: Context) => {
   });
   await file.save();
 
-  ctx.status = 201;
-  ctx.body = file.toJSON({ virtuals: true });
+  sendResponse(ctx, 201, file.toJSON({ virtuals: true }));
 });
 
 export default router;
