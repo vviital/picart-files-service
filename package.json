@@ -16,7 +16,8 @@
     "build": "rm -rf dest && tsc --build",
     "start": "node dest/index.js",
     "start:dev": "node --inspect=5858 -r ts-node/register ./src/index.ts",
-    "start:watch": "nodemon"
+    "start:watch": "nodemon",
+    "test": "jest"
   },
   "name": "picart-files-service",
   "version": "1.0.0",
@@ -25,6 +26,9 @@
   "author": "Vitali Zaneuski <vviital@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/form-data": "^2.5.0",
+    "@types/got": "^9.6.8",
+    "@types/jest": "^24.0.21",
     "@types/koa": "^2.0.51",
     "@types/koa-logger": "^3.1.1",
     "@types/koa-router": "^7.0.42",
@@ -33,6 +37,8 @@
     "@types/mongoose": "^5.5.28",
     "@types/split2": "^2.1.6",
     "@types/through2": "^2.0.34",
+    "form-data": "^2.5.1",
+    "got": "^9.6.0",
     "jest": "^24.9.0",
     "nodemon": "^1.19.4",
     "ts-jest": "^24.1.0",

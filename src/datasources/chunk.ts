@@ -20,6 +20,9 @@ const chunkDefinition = new mongoose.Schema({
   content: {
     type: Buffer,
   },
+  ownerID: {
+    type: String,
+  },
   updatedAt: {
     type: Date,
     default: Date.now(),
@@ -35,6 +38,7 @@ export interface IChunk extends mongoose.Document {
   createdAt: Date,
   hash: string,
   index: number,
+  ownerID: string,
   size: number,
   total: number,
   updatedAt: Date,

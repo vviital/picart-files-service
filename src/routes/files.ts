@@ -6,6 +6,7 @@ import { IFile } from '../datasources/file'
 import { ISpectrumPoint } from '../datasources/spectrumLine'
 import { contentTypes } from '../constants';
 import * as mongoose from 'mongoose';
+import { omit } from 'lodash';
 
 const router = new Router({
   prefix: '/files',
@@ -71,7 +72,10 @@ router.get('/:id', async (ctx: Koa.Context) => {
     return;
   }
 
-  ctx.body = { ...file.toJSON({ virtuals: true }), content };
+  ctx.body = {
+    ...file.toJSON({ virtuals: true }),
+    content: content.map(x => omit(x.toJSON(), '_id')),
+  };
 });
 
 router.delete('/:id', async (ctx: Koa.Context) => {
@@ -86,6 +90,8 @@ router.delete('/:id', async (ctx: Koa.Context) => {
     ctx.body = { message: 'File not found' };
     return
   }
+
+  await File.deleteOne(query);
 
   const contentType = file.contentType;
 

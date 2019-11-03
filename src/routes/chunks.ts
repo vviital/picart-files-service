@@ -47,8 +47,9 @@ router.post('/', koaBody({
   const file: any = get(ctx, 'request.files.chunk');
   const body = extractChunkParams(get(ctx, 'request.body'));
   const content = await getChunkContent(file.path);
+  const ownerID = 'unknown';
 
-  const chunk = new Chunk({ ...body, content });
+  const chunk = new Chunk({ ...body, content, ownerID });
   await chunk.save();
 
   ctx.status = 200;
@@ -170,6 +171,15 @@ router.post('/spectrum/:hash', koaBody(), async (ctx: Context) => {
   const hash: string = get(ctx, 'params.hash', '');
   const body = get(ctx, 'request.body', {});
   const fileID = shortID();
+  const ownerID = 'unknown';
+
+  const count = await Chunk.count({ hash, ownerID })
+
+  if (!count) {
+    ctx.body = { message: 'Chunks not found' };
+    ctx.status = 404;
+    return;
+  }
 
   const result = await uploadPoints(fileID, hash);
 
