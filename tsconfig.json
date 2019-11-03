@@ -2,7 +2,7 @@
   "compileOnSave": true,
   "exclude": [
     "node_modules",
-    "**/*.spec.js"
+    "**/*.spec.ts"
   ],
   "compilerOptions": {
     "allowJs": false,
