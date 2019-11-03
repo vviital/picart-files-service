@@ -4,25 +4,30 @@
   </head>
   <body>
       <style>
-        #byte_content {
+        #file_content {
           margin: 5px 0;
-          max-height: 100px;
+          max-height: 500px;
           overflow-y: auto;
           overflow-x: hidden;
         }
-        #byte_range { margin-top: 5px; }
       </style>
         
-      <input type="file" id="files" name="file" /> Read bytes: 
-      <span class="readBytesButtons">
-        <button>Read file</button>
-      </span>
-      <div id="byte_range"></div>
-      <div id="byte_content"></div>
+      <div>
+        <input type="file" id="files" name="file" />
+      </div>
+      <div class="uploadFile">
+        Upload file: <button>Upload file</button>
+      </div>
+
+      <pre id="file_content"></pre>
 
       <script>
         const chunkSize = 1024; // 32 * 1024 // 32kb.
         const hashChunk = 12 * 1024 * 1024 // 12mb for hash calculation.
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InRlc3QiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJsb2dpbiI6InRlc3QtbG9naW4iLCJyb2xlcyI6WyJ1c2VyIiwiYWRtaW4iXSwiaWF0IjoxNTcyNzc1NjQ3LCJleHAiOjQ3MjYzNzU2NDd9.qCE8lh3L5t7OubH8tAVVTEW7ANwjwn2BfiwUnaBu7dM';
+        const defaultHeaders = {
+          Authorization: `Bearer ${token}`,
+        };
 
         const getFile = () => {
           var files = document.getElementById('files').files;
@@ -43,15 +48,17 @@
           form.append('chunk', chunk);
 
           await fetch('http://localhost:3000/chunks', {
-            method: 'POST',
             body: form,
+            headers: defaultHeaders,
+            method: 'POST',
           });
         };
 
         const finalize = async (hash) => {
-          await fetch(`http://localhost:3000/chunks/spectrum/${hash}`, {
+          const stream = await fetch(`http://localhost:3000/chunks/spectrum/${hash}`, {
             method: 'POST',
             headers: {
+              ...defaultHeaders,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -59,6 +66,24 @@
               description: 'Deserunt fugiat et incididunt incididunt non tempor ex. Dolore ullamco labore dolore non magna esse sit nulla culpa esse qui laboris mollit esse. Sit non deserunt irure officia cillum incididunt veniam ex tempor. Magna adipisicing dolor labore do ea amet est pariatur proident reprehenderit aliqua id aliquip. Elit sit occaecat adipisicing mollit esse deserunt aliqua cillum ea enim. Minim ipsum veniam nisi id do minim minim laborum duis aliquip est voluptate. Proident occaecat nostrud voluptate mollit in incididunt incididunt culpa occaecat non consequat cillum eu sunt.'
             }),
           });
+
+          const { id } = await stream.json();
+          return id;
+        };
+
+        const updateDOM = async (fileID) => {
+          const stream = await fetch(`http://localhost:3000/files/${fileID}?limit=10`, {
+            json: true,
+            headers: {
+              ...defaultHeaders,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          const content = await stream.json();
+
+          const node = document.getElementById('file_content');
+          node.innerHTML = JSON.stringify(content, undefined, 2);
         };
 
         const uploadFile = async () => {
@@ -82,12 +107,13 @@
             });
           }
 
-          await finalize(hash);
+          const fileID = await finalize(hash);
+          await updateDOM(fileID);
         };
 
         const main = () => {
           document
-            .querySelector('.readBytesButtons')
+            .querySelector('.uploadFile')
             .addEventListener('click', (event) => {
               if (event.target.tagName.toLowerCase() == 'button') {
                 uploadFile().catch(console.error);
