@@ -1,9 +1,7 @@
 import { Context } from 'koa'
 import * as Router from 'koa-router';
 import * as koaBody from 'koa-body';
-import { get, chunk as splitToChunks }  from 'lodash';
-import * as fs from 'fs';
-import * as util from 'util';
+import { get }  from 'lodash';
 import { Readable, Writable } from 'stream';
 import * as split from 'split2';
 import * as through2 from 'through2';
@@ -11,13 +9,10 @@ import * as shortID from 'shortid';
 import * as mongoose from 'mongoose';
 
 import { ChunkUploadBody } from '../models';
-import { Chunk, File, SpectrumPoint } from '../datasources';
+import { Chunk, File, SpectrumPoint, fsStorage } from '../datasources';
 import { contentTypes } from '../constants';
 import { auth } from '../middlewares';
 import { sendResponse, sendError } from '../senders';
-
-const readFile = util.promisify(fs.readFile);
-const deleteFile = util.promisify(fs.unlink);
 
 const router = new Router({
   prefix: '/chunks',
@@ -33,22 +28,13 @@ const extractChunkParams = (body: any): ChunkUploadBody => {
   };
 };
 
-const getChunkContent = async (path: string): Promise<Buffer> => {
-  const buffer: Buffer = await readFile(path);
-
-  // We need to delete uploaded file.
-  await deleteFile(path);
-
-  return buffer;
-}
-
 router.post('/', auth, koaBody({
   // Add limits to the max size;
   multipart: true,
 }), async (ctx: Context) => {
   const file: any = get(ctx, 'request.files.chunk');
   const body = extractChunkParams(get(ctx, 'request.body'));
-  const content = await getChunkContent(file.path);
+  const content = await fsStorage.getChunkContent(file.path);
   const ownerID: string = ctx.user.id;
 
   const chunk = new Chunk({ ...body, content, ownerID });
