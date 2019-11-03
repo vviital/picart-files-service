@@ -20,6 +20,8 @@ const spectrumPointDefinition = new mongoose.Schema({
   },
 });
 
+spectrumPointDefinition.index({ fileID: 1, waveLength: 1 });
+
 export interface ISpectrumPoint extends mongoose.Document {
   fileID: string,
   intensity: number,

@@ -44,6 +44,8 @@ const fileDefinition = new mongoose.Schema({
 });
 
 fileDefinition.virtual('type').get(() => 'file');
+fileDefinition.index({ ownerID: 1, updatedAt: -1 });
+fileDefinition.index({ ownerID: 1, resourceID: 1, updatedAt: -1 });
 
 export interface IFile extends mongoose.Document {
   contentType: string,

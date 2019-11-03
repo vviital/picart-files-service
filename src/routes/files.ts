@@ -30,7 +30,7 @@ router.get('/', auth, async (ctx: Koa.Context) => {
     File.find({ ownerID })
       .limit(params.limit)
       .skip(params.offset)
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1 })
   ]);
 
   sendResponse(ctx, 200, {

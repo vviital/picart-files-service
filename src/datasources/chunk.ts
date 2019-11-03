@@ -33,6 +33,8 @@ const chunkDefinition = new mongoose.Schema({
   },
 });
 
+chunkDefinition.index({ ownerID: 1, hash: 1, index: 1 });
+
 export interface IChunk extends mongoose.Document {
   content: Buffer,
   createdAt: Date,
