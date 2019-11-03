@@ -2,6 +2,7 @@
   "dependencies": {
     "@koa/cors": "2",
     "@types/shortid": "^0.0.29",
+    "jsonwebtoken": "^8.5.1",
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
     "koa-logger": "^3.2.1",
@@ -19,6 +20,9 @@
     "start:watch": "nodemon",
     "test": "jest"
   },
+  "engines": {
+    "node": ">=12.3.0"
+  },
   "name": "picart-files-service",
   "version": "1.0.0",
   "main": "index.js",
@@ -29,6 +33,7 @@
     "@types/form-data": "^2.5.0",
     "@types/got": "^9.6.8",
     "@types/jest": "^24.0.21",
+    "@types/jsonwebtoken": "^8.3.5",
     "@types/koa": "^2.0.51",
     "@types/koa-logger": "^3.1.1",
     "@types/koa-router": "^7.0.42",

@@ -6,6 +6,11 @@ import createApp from '../src/app'
 import config from '../src/config';
 
 const getURL = () => `http://localhost:${config.port}`;
+// use hard-coded token in the tests.
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InRlc3QiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJsb2dpbiI6InRlc3QtbG9naW4iLCJyb2xlcyI6WyJ1c2VyIiwiYWRtaW4iXSwiaWF0IjoxNTcyNzc1NjQ3LCJleHAiOjQ3MjYzNzU2NDd9.qCE8lh3L5t7OubH8tAVVTEW7ANwjwn2BfiwUnaBu7dM';
+const defaultHeaders = {
+  Authorization: `Bearer ${token}`,
+};
 
 describe('File service common flow', () => {
   let app: { destroy: () => Promise<void> };
@@ -34,6 +39,7 @@ describe('File service common flow', () => {
 
       const { body } = await got.post(url, {
         body: form,
+        headers: defaultHeaders,
       });
 
       const r = JSON.parse(body);
@@ -59,6 +65,7 @@ describe('File service common flow', () => {
 
     const { body } = await got.post(url, {
       json: true,
+      headers: defaultHeaders,
       body: {
         title: 'Test title',
         description: 'Test description',
@@ -71,7 +78,7 @@ describe('File service common flow', () => {
       createdAt: expect.any(String),
       description: 'Test description',
       id: expect.any(String),
-      ownerID: 'unknown',
+      ownerID: 'test',
       resourceID: 'Test search',
       title: 'Test title',
       totalCount: 3,
@@ -85,7 +92,9 @@ describe('File service common flow', () => {
   it('should delete chunks', async () => {
     let url = `${getURL()}/chunks/${hash}`;
 
-    let result = await got.delete(url);
+    let result = await got.delete(url, {
+      headers: defaultHeaders,
+    });
 
     expect(result.statusCode).toEqual(204);
 
@@ -93,6 +102,7 @@ describe('File service common flow', () => {
 
     result = await got.post(url, {
       json: true,
+      headers: defaultHeaders,
       body: {
         title: 'Test title',
         description: 'Test description',
@@ -113,6 +123,7 @@ describe('File service common flow', () => {
     const url = `${getURL()}/files`;
 
     const { body } = await got(url, {
+      headers: defaultHeaders,
       json: true,
     });
 
@@ -129,7 +140,7 @@ describe('File service common flow', () => {
           description: 'Test description',
           contentType: 'spectrum',
           id: expect.any(String),
-          ownerID: 'unknown',
+          ownerID: 'test',
           totalCount: 3,
           type: 'file'
         }
@@ -143,6 +154,7 @@ describe('File service common flow', () => {
     const url = `${getURL()}/files/${fileID}`;
 
     const { body } = await got(url, {
+      headers: defaultHeaders,
       json: true,
     });
 
@@ -154,7 +166,7 @@ describe('File service common flow', () => {
       description: 'Test description',
       contentType: 'spectrum',
       id: expect.any(String),
-      ownerID: 'unknown',
+      ownerID: 'test',
       totalCount: 3,
       type: 'file',
       content: [
@@ -168,11 +180,14 @@ describe('File service common flow', () => {
   it('should delete file by ID', async () => {
     const url = `${getURL()}/files/${fileID}`;
 
-    let result = await got.delete(url);
+    let result = await got.delete(url, {
+      headers: defaultHeaders,
+    });
 
     expect(result.statusCode).toEqual(204);
 
     result = await got(url, {
+      headers: defaultHeaders,
       json: true,
       throwHttpErrors: false,
     });

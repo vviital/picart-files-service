@@ -1,12 +1,13 @@
 import * as Router from 'koa-router';
 import * as Koa from 'koa';
+import * as mongoose from 'mongoose';
+import { omit } from 'lodash';
 
 import { File, SpectrumPoint } from '../datasources';
 import { IFile } from '../datasources/file'
 import { ISpectrumPoint } from '../datasources/spectrumLine'
 import { contentTypes } from '../constants';
-import * as mongoose from 'mongoose';
-import { omit } from 'lodash';
+import { auth } from '../middlewares';
 
 const router = new Router({
   prefix: '/files',
@@ -30,9 +31,9 @@ const getPaginationParams = (ctx: Koa.Context): Pagination => {
   };
 };
 
-router.get('/', async (ctx: Koa.Context) => {
+router.get('/', auth, async (ctx: Koa.Context) => {
   const params = getPaginationParams(ctx);
-  const ownerID = 'unknown';
+  const ownerID = ctx.user.id;
 
   const [count, files] = await Promise.all([
     File.count({ ownerID }),
@@ -50,10 +51,10 @@ router.get('/', async (ctx: Koa.Context) => {
   };
 });
 
-router.get('/:id', async (ctx: Koa.Context) => {
+router.get('/:id', auth, async (ctx: Koa.Context) => {
   const params = getPaginationParams(ctx);
   const id: string = ctx.params.id;
-  const ownerID = 'unknown';
+  const ownerID = ctx.user.id;
 
   const results = await Promise.all([
     File.findOne({ ownerID, id }),
@@ -78,9 +79,9 @@ router.get('/:id', async (ctx: Koa.Context) => {
   };
 });
 
-router.delete('/:id', async (ctx: Koa.Context) => {
+router.delete('/:id', auth, async (ctx: Koa.Context) => {
   const id: string = ctx.params.id;
-  const ownerID = 'unknown';
+  const ownerID = ctx.user.id;
   const query = { id, ownerID };
 
   const file = await File.findOne(query);

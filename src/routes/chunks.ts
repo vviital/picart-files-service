@@ -10,9 +10,10 @@ import * as through2 from 'through2';
 import * as shortID from 'shortid';
 import * as mongoose from 'mongoose';
 
-import { ChunkUploadBody } from '../models/chunk';
+import { ChunkUploadBody } from '../models';
 import { Chunk, File, SpectrumPoint } from '../datasources';
 import { contentTypes } from '../constants';
+import { auth } from '../middlewares';
 
 const readFile = util.promisify(fs.readFile);
 const deleteFile = util.promisify(fs.unlink);
@@ -40,14 +41,14 @@ const getChunkContent = async (path: string): Promise<Buffer> => {
   return buffer;
 }
 
-router.post('/', koaBody({
+router.post('/', auth, koaBody({
   // Add limits to the max size;
   multipart: true,
 }), async (ctx: Context) => {
   const file: any = get(ctx, 'request.files.chunk');
   const body = extractChunkParams(get(ctx, 'request.body'));
   const content = await getChunkContent(file.path);
-  const ownerID = 'unknown';
+  const ownerID: string = ctx.user.id;
 
   const chunk = new Chunk({ ...body, content, ownerID });
   await chunk.save();
@@ -150,9 +151,9 @@ const uploadPoints = async (fileID: string, hash: string): Promise<{ totalCount:
   return result as Promise<{ totalCount: number }>;
 }
 
-router.delete('/:hash', async (ctx: Context) => {
+router.delete('/:hash', auth, async (ctx: Context) => {
   const hash: string = get(ctx, 'params.hash', '');
-  const ownerID: string = 'unknown';
+  const ownerID: string = ctx.user.id;
   const query = { ownerID, hash }
 
   const result = await Chunk.deleteMany(query);
@@ -167,11 +168,11 @@ router.delete('/:hash', async (ctx: Context) => {
 });
 
 // Create file with analyzed spectrum points.
-router.post('/spectrum/:hash', koaBody(), async (ctx: Context) => {
+router.post('/spectrum/:hash', auth, koaBody(), async (ctx: Context) => {
   const hash: string = get(ctx, 'params.hash', '');
   const body = get(ctx, 'request.body', {});
   const fileID = shortID();
-  const ownerID = 'unknown';
+  const ownerID = ctx.user.id;
 
   const count = await Chunk.count({ hash, ownerID })
 
@@ -187,7 +188,7 @@ router.post('/spectrum/:hash', koaBody(), async (ctx: Context) => {
     ...body,
     contentType: contentTypes.spectrum,
     id: fileID,
-    ownerID: 'unknown', // hard-coded value for tests.
+    ownerID,
     totalCount: result.totalCount,
   });
   await file.save();
