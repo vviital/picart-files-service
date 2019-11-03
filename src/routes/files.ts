@@ -4,7 +4,7 @@ import * as mongoose from 'mongoose';
 import { omit } from 'lodash';
 
 import { File, SpectrumPoint } from '../datasources';
-import { IFile } from '../datasources/file'
+import { IFile } from '../datasources/files'
 import { ISpectrumPoint } from '../datasources/spectrumLine'
 import { contentTypes } from '../constants';
 import { auth } from '../middlewares';

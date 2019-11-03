@@ -1,6 +1,6 @@
 import Chunk from './chunk';
 import SpectrumPoint from './spectrumLine';
-import File from './file';
+import File from './files';
 
 export {
   Chunk,
