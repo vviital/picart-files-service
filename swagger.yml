@@ -1,0 +1,317 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger PicArt Files service
+  license:
+    name: MIT
+servers:
+  - url: http://picart.swagger.io/v1
+
+security:
+  - BearerAuth: []
+
+paths:
+  /chunks:
+    post:
+      summary: Upload chunk of the file.
+      tags:
+        - chunks
+      requestBody:
+        description: Chunk's related data.
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Chunk"
+      responses:
+        '200':
+          description: Chunk successfully uploaded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: id of the chunk.
+        '401':
+          description: authorization failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error" 
+  /chunks/{hash}:
+    delete:
+      summary: Delete all chunks with associated hash.
+      tags:
+        - chunks
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          description: The hash of the file.
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Chunks successfully deleted.
+        '401':
+          description: authorization failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Chunks not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /chunks/spectrum/{hash}:
+    post:
+      summary: Combine all chunks with the given hash and analyze content as a spectrum points.
+      tags:
+        - chunks
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          description: The hash of the file.
+          schema:
+            type: string    
+      requestBody:
+        description: Chunk's related data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileMeta"
+      responses:
+        '200':
+          description: Chunk successfully uploaded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/File"
+        '401':
+          description: authorization failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Chunks not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /files:
+    get:
+      summary: Returns all files under the certain query.
+      tags:
+        - files
+      parameters:
+        - name: limit
+          in: query
+          description: number of files to return
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 25
+        - name: offset
+          in: query
+          description: number of files to skip
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: q
+          in: query
+          description: query string to search, e.g. q="Test" returns all files with "Test" keyword in the description.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A paged array of files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: 
+                      $ref: "#/components/schemas/File"
+                  limit:
+                    type: integer
+                    format: int32
+                    default: 25
+                  offset:
+                    type: integer
+                    format: int32
+                    default: 0
+                  totalCount:
+                    type: integer
+                    format: int32
+                    default: 0
+                  type:
+                    type: string
+                    default: "collection"
+        '401':
+          description: authorization failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error" 
+  /files/{fileID}:
+    parameters:
+      - name: fileID
+        in: path
+        required: true
+        description: The id of file to retrieve.
+        schema:
+          type: string  
+    get:
+      summary: returns a file with paginated content.
+      tags:
+        - files
+      parameters: 
+        - name: limit
+          in: query
+          description: paginates content of the file.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 25
+        - name: offset
+          in: query
+          description: paginates content of the file.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        '200':
+          description: returns file with paginated content.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileWithContent"
+        '401':
+          description: authorization failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: File not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: deletes the file.
+      tags:
+        - files
+      responses:
+        '204':
+          description: deletes the file.
+        '401':
+          description: authorization failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: File not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Chunk:
+      type: object
+      properties:
+        filename:
+          type: string
+        hash:
+          type: string
+          description: value to link chunk with the file.
+        index:
+          type: number
+          description: index of the chunk in the sequence.
+        size:
+          type: number
+          description: size of the file.
+        total:
+          type: number
+          description: number of the chunks.
+        chunk:
+          type: string
+          format: binary
+    FileMeta:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        resourceID:
+          type: string
+    Content:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object      
+    File:
+      allOf:
+        - $ref: "#/components/schemas/FileMeta"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+            hash:
+              type: string
+            ownerID:
+              type: string
+            contentType:
+              type: string
+              description: type of the content based on the analysis.
+            totalCount:
+              type: number
+              description: total number of records in the content array.
+            type:
+              type: string
+            createdAt:
+              type: integer
+              format: int64
+            updatedAt:
+              type: integer
+              format: int64
+    FileWithContent:
+      allOf:
+        - $ref: "#/components/schemas/File"
+        - $ref: "#/components/schemas/Content"
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string

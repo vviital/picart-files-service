@@ -167,6 +167,12 @@ router.delete('/:hash', auth, async (ctx: Context) => {
   ctx.status = 204;
 });
 
+const extractFileMeta = (body: any) => ({
+  title: get(body, 'title', ''),
+  description: get(body, 'description', ''),
+  resourceID: get(body, 'resourceID', ''),
+});
+
 // Create file with analyzed spectrum points.
 router.post('/spectrum/:hash', auth, koaBody(), async (ctx: Context) => {
   const hash: string = get(ctx, 'params.hash', '');
@@ -185,7 +191,7 @@ router.post('/spectrum/:hash', auth, koaBody(), async (ctx: Context) => {
   const result = await uploadPoints(fileID, hash);
 
   const file = new File({
-    ...body,
+    ...extractFileMeta(body),
     contentType: contentTypes.spectrum,
     id: fileID,
     ownerID,
