@@ -4,7 +4,6 @@ node_js:
   - "12.13.0"
 os:
   - linux
-  - osx
 
 services: mongodb
 
