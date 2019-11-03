@@ -1,0 +1,101 @@
+<html>
+  <head>
+
+  </head>
+  <body>
+      <style>
+        #byte_content {
+          margin: 5px 0;
+          max-height: 100px;
+          overflow-y: auto;
+          overflow-x: hidden;
+        }
+        #byte_range { margin-top: 5px; }
+      </style>
+        
+      <input type="file" id="files" name="file" /> Read bytes: 
+      <span class="readBytesButtons">
+        <button>Read file</button>
+      </span>
+      <div id="byte_range"></div>
+      <div id="byte_content"></div>
+
+      <script>
+        const chunkSize = 1024; // 32 * 1024 // 32kb.
+        const hashChunk = 12 * 1024 * 1024 // 12mb for hash calculation.
+
+        const getFile = () => {
+          var files = document.getElementById('files').files;
+          if (!files.length) {
+            return null;
+          }
+
+          return files[0];
+        };
+
+        const uploadChunk = async (chunk, options = {}) => {
+          const form = new FormData();
+
+          Object.keys(options).forEach((key) => {
+            form.append(key, options[key]);
+          });
+
+          form.append('chunk', chunk);
+
+          await fetch('http://localhost:3000/chunks', {
+            method: 'POST',
+            body: form,
+          });
+        };
+
+        const finalize = async (hash) => {
+          await fetch(`http://localhost:3000/chunks/spectrum/${hash}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              title: 'Anim et nulla excepteur officia sint aliquip id minim reprehenderit.',
+              description: 'Deserunt fugiat et incididunt incididunt non tempor ex. Dolore ullamco labore dolore non magna esse sit nulla culpa esse qui laboris mollit esse. Sit non deserunt irure officia cillum incididunt veniam ex tempor. Magna adipisicing dolor labore do ea amet est pariatur proident reprehenderit aliqua id aliquip. Elit sit occaecat adipisicing mollit esse deserunt aliqua cillum ea enim. Minim ipsum veniam nisi id do minim minim laborum duis aliquip est voluptate. Proident occaecat nostrud voluptate mollit in incididunt incididunt culpa occaecat non consequat cillum eu sunt.'
+            }),
+          });
+        };
+
+        const uploadFile = async () => {
+          const file = getFile();
+          if (!file) return;
+
+          const hash = Math.random().toString(16).slice(2);
+          const chunks = Math.ceil(file.size / chunkSize);
+
+          for (let i = 0; i < chunks; i += 1) {
+            const from = i * chunkSize;
+            const to = Math.min(from + chunkSize, file.size);
+            const blob = file.slice(from, to);
+
+            await uploadChunk(blob, {
+              filename: file.name,
+              hash,
+              index: i,
+              size: file.size,
+              total: chunks,
+            });
+          }
+
+          await finalize(hash);
+        };
+
+        const main = () => {
+          document
+            .querySelector('.readBytesButtons')
+            .addEventListener('click', (event) => {
+              if (event.target.tagName.toLowerCase() == 'button') {
+                uploadFile().catch(console.error);
+              }
+            }, false);
+        };
+
+        main();
+      </script>
+  </body>
+</html>

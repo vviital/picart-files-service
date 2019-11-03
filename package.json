@@ -1,6 +1,16 @@
 {
   "dependencies": {
-    "koa": "^2.11.0"
+    "@koa/cors": "2",
+    "@types/shortid": "^0.0.29",
+    "koa": "^2.11.0",
+    "koa-body": "^4.1.1",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^7.4.0",
+    "lodash": "^4.17.15",
+    "mongoose": "^5.7.7",
+    "shortid": "^2.2.15",
+    "split2": "^3.1.1",
+    "through2": "^3.0.1"
   },
   "scripts": {
     "build": "rm -rf dest && tsc --build",
@@ -15,6 +25,14 @@
   "author": "Vitali Zaneuski <vviital@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/koa": "^2.0.51",
+    "@types/koa-logger": "^3.1.1",
+    "@types/koa-router": "^7.0.42",
+    "@types/koa__cors": "^2.2.3",
+    "@types/lodash": "^4.14.144",
+    "@types/mongoose": "^5.5.28",
+    "@types/split2": "^2.1.6",
+    "@types/through2": "^2.0.34",
     "jest": "^24.9.0",
     "nodemon": "^1.19.4",
     "ts-jest": "^24.1.0",
