@@ -18,7 +18,7 @@ const createApp = async () => {
   await mongoose.connect(config.mongoURL, { useNewUrlParser: true });
 
   const server = app.listen(config.port, () => {
-    console.log('Koa started');
+    console.log('Files service started');
   });
 
   return {
