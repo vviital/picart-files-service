@@ -25,11 +25,11 @@ const chunkDefinition = new mongoose.Schema({
   },
   updatedAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   createdAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
 });
 
