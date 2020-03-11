@@ -55,7 +55,7 @@ router.get('/:id', auth, async (ctx: Koa.Context) => {
   ]);
 
   const file: IFile | null = results[0];
-  const content: ISpectrumPoint[] = results[1];
+  const content: ISpectrumPoint[] = results[1] || [];
 
   if (!file) {
     return sendError(ctx, 404, { message: 'File not found' });
