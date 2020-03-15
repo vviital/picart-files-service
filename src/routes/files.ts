@@ -3,9 +3,9 @@ import * as Koa from 'koa';
 import * as mongoose from 'mongoose';
 import { omit } from 'lodash';
 
-import { File, SpectrumPoint } from '../datasources';
+import { CachedFile, File, SpectrumPoint } from '../datasources';
 import { IFile } from '../datasources/files'
-import { ISpectrumPoint } from '../datasources/spectrumLine'
+import { ISpectrumPoint } from '../datasources/spectrumPoints'
 import { contentTypes } from '../constants';
 import { auth } from '../middlewares';
 import { sendResponse, sendError } from '../senders';
@@ -46,12 +46,25 @@ router.get('/:id', auth, async (ctx: Koa.Context) => {
   const id: string = ctx.params.id;
   const ownerID = ctx.user.id;
 
+  const cacheKeyParams = {
+    ...getPaginationParams,
+    id,
+    ownerID,
+    sort: {x: 1}
+  };
+
+  const cacheKey = CachedFile.createCacheKey(cacheKeyParams);
+  let cache = await CachedFile.findByCacheKey(cacheKey);
+  if (cache) {
+    return sendResponse(ctx, 200, cache);
+  }
+
   const results = await Promise.all([
     File.findOne({ ownerID, id }),
     SpectrumPoint.find({ fileID: id })
       .limit(params.limit)
       .skip(params.offset)
-      .sort({ waveLength: 1 }),
+      .sort(cacheKeyParams.sort),
   ]);
 
   const file: IFile | null = results[0];
@@ -61,10 +74,13 @@ router.get('/:id', auth, async (ctx: Koa.Context) => {
     return sendError(ctx, 404, { message: 'File not found' });
   }
 
-  sendResponse(ctx, 200, {
-    ...file.toJSON({ virtuals: true }),
-    content: content.map(x => omit(x.toJSON(), '_id')),
-  });
+  const result = {
+    ...omit(file.toJSON({ virtuals: true }), ['_id']),
+    content: content.map(x => omit(x.toJSON(), ['_id', 'fileID'])),
+  };
+  await CachedFile.persist(cacheKey, result);
+
+  sendResponse(ctx, 200, result);
 });
 
 router.delete('/:id', auth, async (ctx: Koa.Context) => {

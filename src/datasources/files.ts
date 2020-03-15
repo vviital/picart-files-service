@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-const fileDefinition = new mongoose.Schema({
+export const definition = {
   __v: {
     type: Number,
     select: false,
@@ -41,7 +41,9 @@ const fileDefinition = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+};
+
+const fileDefinition = new mongoose.Schema(definition);
 
 fileDefinition.virtual('type').get(() => 'file');
 fileDefinition.index({ ownerID: 1, updatedAt: -1 });

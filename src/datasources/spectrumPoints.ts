@@ -5,11 +5,11 @@ const spectrumPointDefinition = new mongoose.Schema({
     type: Number,
     select: false,
   },
-  waveLength: {
+  x: {
     type: Number,
     required: true,
   },
-  intensity: {
+  y: {
     required: true,
     type: Number,
   },
@@ -20,12 +20,12 @@ const spectrumPointDefinition = new mongoose.Schema({
   },
 });
 
-spectrumPointDefinition.index({ fileID: 1, waveLength: 1 });
+spectrumPointDefinition.index({ fileID: 1, x: 1 });
 
 export interface ISpectrumPoint extends mongoose.Document {
   fileID: string,
-  intensity: number,
-  waveLength: number,
+  y: number,
+  x: number,
 }
 
 const SpectrumPoint = mongoose.model<ISpectrumPoint>('spectrumPoints', spectrumPointDefinition);

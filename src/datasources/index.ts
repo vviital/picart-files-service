@@ -1,11 +1,13 @@
+import CachedFile from './files-cache';
 import Chunk from './chunk';
-import SpectrumPoint from './spectrumLine';
 import File from './files';
 import fsStorage from './fsstorage';
+import SpectrumPoint from './spectrumPoints';
 
 export {
+  CachedFile,
   Chunk,
   File,
-  SpectrumPoint,
   fsStorage,
+  SpectrumPoint,
 };

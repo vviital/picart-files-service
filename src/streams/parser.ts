@@ -4,12 +4,12 @@ const parser = (fileID: string) => {
   let totalCount: number = 0;
 
   const stream = through2.obj(function (chunk, _, callback) {
-    const [waveLength, intensity] =  chunk.toString().split(' ');
+    const [x, y] =  chunk.toString().split(' ');
     totalCount++;
     this.push({
       fileID,
-      intensity: parseFloat(intensity.replace(',', '.')),
-      waveLength: parseFloat(waveLength.replace(',', '.')),
+      y: parseFloat(y.replace(',', '.')),
+      x: parseFloat(x.replace(',', '.')),
     });
     callback();
   });

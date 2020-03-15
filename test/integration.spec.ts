@@ -170,9 +170,9 @@ describe('File service common flow', () => {
       totalCount: 3,
       type: 'file',
       content: [
-        { intensity: 2, waveLength: 1 },
-        { intensity: 4, waveLength: 3 },
-        { intensity: 6, waveLength: 5 }
+        { y: 2, x: 1 },
+        { y: 4, x: 3 },
+        { y: 6, x: 5 }
       ],
     }));
   });
